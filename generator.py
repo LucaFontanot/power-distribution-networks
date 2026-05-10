@@ -132,13 +132,20 @@ class Generator:
         side_s = self._box_side(n_ss_suburbs, density_suburbs)
         half_c, half_s = side_c / 2, side_s / 2
 
-        # Primary substations placed in their respective zones
-        ps_center = rng.uniform(-half_c, half_c, (n_ps_center, 2))
-        ps_suburbs = rng.uniform(-half_s, half_s, (n_ps_suburbs, 2))
+        if half_s <= half_c:
+            raise ValueError(
+                f"Suburban box (side={side_s:.2f} km) must be larger than "
+                f"centre box (side={side_c:.2f} km). "
+                f"Ensure density_suburbs < density_center."
+            )
 
-        # Secondary substations
+        # Centre nodes — strictly inside the centre box
+        ps_center = rng.uniform(-half_c, half_c, (n_ps_center, 2))
         ss_center = rng.uniform(-half_c, half_c, (n_ss_center, 2))
-        ss_suburbs = rng.uniform(-half_s, half_s, (n_ss_suburbs, 2))
+
+        # Suburban nodes — in the ring outside the centre box
+        ps_suburbs = self._sample_in_ring(n_ps_suburbs, half_s, half_c, rng)
+        ss_suburbs = self._sample_in_ring(n_ss_suburbs, half_s, half_c, rng)
 
         nodes = np.vstack([ps_center, ps_suburbs, ss_center, ss_suburbs])
         types = (
@@ -149,6 +156,28 @@ class Generator:
         )
 
         return nodes, types, side_c, side_s
+
+    """
+    Sample n points uniformly inside the outer box but strictly outside
+    the inner (centre) box — i.e. in the ring/frame area only.
+    Uses rejection sampling; converges quickly when the ring is large.
+    """
+    def _sample_in_ring(
+            self,
+            n: int,
+            half_outer: float,
+            half_inner: float,
+            rng: np.random.Generator,
+    ) -> np.ndarray:
+        points = []
+        while len(points) < n:
+            batch = rng.uniform(-half_outer, half_outer, (max(n * 4, 64), 2))
+            outside = batch[
+                (np.abs(batch[:, 0]) > half_inner) |
+                (np.abs(batch[:, 1]) > half_inner)
+                ]
+            points.extend(outside.tolist())
+        return np.array(points[:n])
 
     """
     Plot the network nodes and optionally arc costs.
