@@ -43,12 +43,13 @@ def plot_network(
                     zorder=3, markeredgecolor='#378ADD', markeredgewidth=0.6)
 
     # Draw obstacle polyline (snake)
-    poly_x = [p[0] for p in net.obstacle_polyline]
-    poly_y = [p[1] for p in net.obstacle_polyline]
-    ax.plot(poly_x, poly_y,
-            color='black', linewidth=2, linestyle='--', zorder=2, label='obstacle')
-    ax.text(poly_x[-1] + 0.05, poly_y[-1], 'obstacle',
-            fontsize=8, color='black')
+    if net.obstacle_polyline:
+        poly_x = [p[0] for p in net.obstacle_polyline]
+        poly_y = [p[1] for p in net.obstacle_polyline]
+        ax.plot(poly_x, poly_y,
+                color='black', linewidth=2, linestyle='--', zorder=2, label='obstacle')
+        ax.text(poly_x[-1] + 0.05, poly_y[-1], 'obstacle',
+                fontsize=8, color='black')
 
     # Draw zone boxes
     hc = net.side_center / 2

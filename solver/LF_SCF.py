@@ -12,8 +12,9 @@ from .utils import (
 """
 Loop-Feeder Single Commodity Flow (LF-SCF).
 """
-def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
 
+
+def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
     R, D, A, c, d, p = _unpack(net)
     nD = len(D)
 
