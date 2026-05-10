@@ -14,6 +14,7 @@ class NetworkData:
 
     # Arc information
     costs: Dict[Tuple[int, int], float]  # arc (i,j) with i<j → cost in EUR
+    cable_capacity: float                # standardised rated capacity per cable (MW)
 
     # Index helpers
     ps_indices: List[int]

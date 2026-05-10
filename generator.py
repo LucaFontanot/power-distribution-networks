@@ -22,6 +22,10 @@ class Generator:
         Mean load demand for suburban SSs (MW). Default: 0.2.
     demand_std_suburbs : float
         Std of load demand for suburban SSs (MW). Default: 0.6.
+    cable_capacity : float
+        Standardised rated capacity of every cable in the network (MW).
+        Must satisfy cable_capacity / 2 >= total_demand / n_PS to ensure
+        feasibility. Default: 10.0.
     """
     def __init__(
             self,
@@ -32,6 +36,7 @@ class Generator:
             demand_std_center: float = 0.2,
             demand_mean_suburbs: float = 0.2,
             demand_std_suburbs: float = 0.6,
+            cable_capacity: float = 10.0,
     ):
         self.base_cost_per_km = base_cost_per_km
         self.obstacle_cost = obstacle_cost
@@ -40,6 +45,7 @@ class Generator:
         self.demand_std_center = demand_std_center
         self.demand_mean_suburbs = demand_mean_suburbs
         self.demand_std_suburbs = demand_std_suburbs
+        self.cable_capacity = cable_capacity
 
     """
     Generate a single synthetic network.
@@ -93,6 +99,7 @@ class Generator:
             types=types,
             demands=demands,
             costs=sp_costs,
+            cable_capacity=self.cable_capacity,
             ps_indices=list(range(n_ps)),
             ss_indices=list(range(n_ps, n_ps + n_ss_center + n_ss_suburbs)),
             obstacle_polyline=obstacle,

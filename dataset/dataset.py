@@ -16,7 +16,7 @@ _CASE_METADATA = {
 }
 
 
-def load_network(name: str) -> NetworkData:
+def load_network(name: str, cable_capacity: float = 10.0) -> NetworkData:
     base_name = name
 
     folder = DATASET_DIR / base_name
@@ -60,6 +60,7 @@ def load_network(name: str) -> NetworkData:
         types=types,
         demands=demands,
         costs=costs,
+        cable_capacity=cable_capacity,
         ps_indices=ps_indices,
         ss_indices=ss_indices,
         obstacle_polyline=[],
