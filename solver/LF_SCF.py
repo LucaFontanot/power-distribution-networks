@@ -1,13 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-from .utils import (
-    _unpack,
-    _extract_solution,
-    star,
-    forward_star,
-    backward_star,
-)
+from .utils import _unpack, _extract_solution, build_adjacency
 
 """
 Loop-Feeder Single Commodity Flow (LF-SCF).
@@ -17,6 +11,8 @@ Loop-Feeder Single Commodity Flow (LF-SCF).
 def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
     R, D, A, c, d, p = _unpack(net)
     nD = len(D)
+
+    fwd, bwd, inc = build_adjacency(A)
 
     m = gp.Model("LF-SCF")
     m.Params.TimeLimit = time_limit
@@ -28,29 +24,23 @@ def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
 
     m.setObjective(gp.quicksum(c[arc] * x[arc] for arc in A), GRB.MINIMIZE)
 
-    # (2) degree = 2 for every demand node
     for k in D:
+        # (2) degree = 2
         m.addConstr(
-            gp.quicksum(x[arc] for arc in star(k, A)) == 2,
+            gp.quicksum(x[arc] for arc in inc[k]) == 2,
             name=f"deg_{k}",
         )
-
-    for k in D:
-        fwd = forward_star(k, A)
-        bwd = backward_star(k, A)
-
         # (3) real power flow conservation
         m.addConstr(
-            gp.quicksum(f[arc] for arc in bwd)
-            - gp.quicksum(f[arc] for arc in fwd)
+            gp.quicksum(f[arc] for arc in bwd[k])
+            - gp.quicksum(f[arc] for arc in fwd[k])
             == d[k],
             name=f"flow_f_{k}",
         )
-
         # (4) fictitious flow conservation
         m.addConstr(
-            gp.quicksum(s[arc] for arc in bwd)
-            - gp.quicksum(s[arc] for arc in fwd)
+            gp.quicksum(s[arc] for arc in bwd[k])
+            - gp.quicksum(s[arc] for arc in fwd[k])
             == 1,
             name=f"flow_s_{k}",
         )

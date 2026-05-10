@@ -2,13 +2,7 @@ import gurobipy as gp
 import networkx as nx
 from gurobipy import GRB
 
-from .utils import (
-    _unpack,
-    _extract_solution,
-    star,
-    forward_star,
-    backward_star,
-)
+from .utils import _unpack, _extract_solution, build_adjacency
 
 """
 Open-Loop Subtour Elimination (OL-SE).
@@ -24,6 +18,8 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
     n_nodes = net.n_nodes
     n_star = n_nodes  # index of virtual node
 
+    fwd, bwd, inc = build_adjacency(A)
+
     m = gp.Model("OL-SE+CC" if cut_constraints else "OL-SE")
     m.Params.TimeLimit = time_limit
     m.Params.OutputFlag = int(verbose)
@@ -34,20 +30,16 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
 
     m.setObjective(gp.quicksum(c[arc] * x[arc] for arc in A), GRB.MINIMIZE)
 
-    # (13) degree = 2
     for k in D:
+        # (13) degree = 2
         m.addConstr(
-            gp.quicksum(x[arc] for arc in star(k, A)) == 2,
+            gp.quicksum(x[arc] for arc in inc[k]) == 2,
             name=f"deg_{k}",
         )
-
-    # (15) flow conservation
-    for k in D:
-        fwd = forward_star(k, A)
-        bwd = backward_star(k, A)
+        # (15) flow conservation
         m.addConstr(
-            gp.quicksum(f[arc] for arc in bwd)
-            - gp.quicksum(f[arc] for arc in fwd)
+            gp.quicksum(f[arc] for arc in bwd[k])
+            - gp.quicksum(f[arc] for arc in fwd[k])
             == d[k],
             name=f"flow_{k}",
         )
