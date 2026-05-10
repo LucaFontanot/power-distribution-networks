@@ -10,10 +10,8 @@ class Generator:
     base_cost_per_km : float
         Base arc cost coefficient (EUR/km). Default: 30,000.
     obstacle_cost : float
-        Extra cost added when an arc crosses the river obstacle (EUR).
+        Extra cost added when an arc crosses the obstacle polyline (EUR).
         Default: 1,000,000.
-    obstacle_x : float
-        x-coordinate of the vertical obstacle line (km). Default: 0.
     triangle_vio_fraction : float
         Fraction of arcs for which the triangle inequality is intentionally
         violated. Default: 0.1.
@@ -31,7 +29,6 @@ class Generator:
             self,
             base_cost_per_km: float = 30_000,
             obstacle_cost: float = 1_000_000,
-            obstacle_x: float = 0.0,
             triangle_vio_fraction: float = 0.1,
             demand_mean_center: float = 0.4,
             demand_std_center: float = 0.2,
@@ -40,7 +37,6 @@ class Generator:
     ):
         self.base_cost_per_km = base_cost_per_km
         self.obstacle_cost = obstacle_cost
-        self.obstacle_x = obstacle_x
         self.triangle_vio_fraction = triangle_vio_fraction
         self.demand_mean_center = demand_mean_center
         self.demand_std_center = demand_std_center
@@ -72,23 +68,26 @@ class Generator:
 
         n_ps = n_ps_center + n_ps_suburbs
 
-        # 1. Place nodes
+        # Place nodes
         nodes, types, side_c, side_s = self._place_nodes(
             n_ps_center, n_ps_suburbs,
             n_ss_center, n_ss_suburbs,
             density_center, density_suburbs, rng
         )
 
-        # 2. Generate demands
+        # Generate demands
         demands = self._generate_demands(n_ps, n_ss_center, n_ss_suburbs, rng)
 
-        # 3. Compute raw arc costs
-        raw_costs = self._compute_raw_costs(nodes, rng)
+        # Generate random obstacle polyline (snake across the map)
+        obstacle = self._generate_obstacle_polyline(side_s / 2, rng)
 
-        # 4. Derive shortest-path costs
+        # Compute raw arc costs
+        raw_costs = self._compute_raw_costs(nodes, obstacle, rng)
+
+        # Derive shortest-path costs
         sp_costs = self._shortest_path_costs(nodes, raw_costs)
 
-        # 5. Intentionally violate triangle inequality for some arcs
+        # Intentionally violate triangle inequality for some arcs
         sp_costs = self._violate_triangle(sp_costs, rng)
 
         return NetworkData(
@@ -98,6 +97,7 @@ class Generator:
             costs=sp_costs,
             ps_indices=list(range(n_ps)),
             ss_indices=list(range(n_ps, n_ps + n_ss_center + n_ss_suburbs)),
+            obstacle_polyline=obstacle,
             side_center=side_c,
             side_suburbs=side_s,
             n_ps_center=n_ps_center,
@@ -180,6 +180,55 @@ class Generator:
         return np.array(points[:n])
 
     """
+    Generate a random snake-like obstacle polyline that crosses the map
+    from the left edge to the right edge.  The number of segments scales
+    randomly with the map size (side = 2 * half_outer).
+    """
+    def _generate_obstacle_polyline(
+            self,
+            half_s: float,
+            rng: np.random.Generator,
+    ) -> List[Tuple[float, float]]:
+        side = half_s * 2
+        # At least 2 segments; upper bound grows with map size
+        n_segs = int(rng.integers(2, max(4, int(side) + 1)))
+        n_pts = n_segs + 1
+
+        xs = np.linspace(-half_s, half_s, n_pts)
+        ys = np.empty(n_pts)
+        ys[0] = float(rng.uniform(-half_s, half_s))
+
+        # Random walk: each step can deviate up to ~40 % of the map height
+        max_step = side * 0.4
+        for k in range(1, n_pts):
+            ys[k] = float(np.clip(
+                ys[k - 1] + rng.uniform(-max_step, max_step),
+                -half_s, half_s,
+            ))
+
+        return [(float(x), float(y)) for x, y in zip(xs, ys)]
+
+    """Return True if segments p1-p2 and p3-p4 properly intersect."""
+    def _segments_intersect(
+            self,
+            p1: Tuple[float, float],
+            p2: Tuple[float, float],
+            p3: Tuple[float, float],
+            p4: Tuple[float, float],
+    ) -> bool:
+        def cross(o, a, b):
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+        d1 = cross(p3, p4, p1)
+        d2 = cross(p3, p4, p2)
+        d3 = cross(p1, p2, p3)
+        d4 = cross(p1, p2, p4)
+        return (
+            ((d1 > 0 and d2 < 0) or (d1 < 0 and d2 > 0)) and
+            ((d3 > 0 and d4 < 0) or (d3 < 0 and d4 > 0))
+        )
+
+    """
     Plot the network nodes and optionally arc costs.
     """
     def plot(
@@ -221,12 +270,12 @@ class Generator:
                 ax.plot(*xy, 'o', color='#85B8E8', markersize=5,
                         zorder=3, markeredgecolor='#378ADD', markeredgewidth=0.6)
 
-        # Draw obstacle
-        y_min = net.nodes[:, 1].min() - 0.5
-        y_max = net.nodes[:, 1].max() + 0.5
-        ax.plot([self.obstacle_x, self.obstacle_x], [y_min, y_max],
-                color='black', linewidth=2, linestyle='--', zorder=2)
-        ax.text(self.obstacle_x + 0.05, y_max - 0.2, 'obstacle',
+        # Draw obstacle polyline (snake)
+        poly_x = [p[0] for p in net.obstacle_polyline]
+        poly_y = [p[1] for p in net.obstacle_polyline]
+        ax.plot(poly_x, poly_y,
+                color='black', linewidth=2, linestyle='--', zorder=2, label='obstacle')
+        ax.text(poly_x[-1] + 0.05, poly_y[-1], 'obstacle',
                 fontsize=8, color='black')
 
         # Draw zone boxes
@@ -288,6 +337,7 @@ class Generator:
     def _compute_raw_costs(
             self,
             nodes: np.ndarray,
+            obstacle: List[Tuple[float, float]],
             rng: np.random.Generator,
     ) -> Dict[Tuple[int, int], float]:
         n = len(nodes)
@@ -298,10 +348,13 @@ class Generator:
                 c = float(rng.uniform(0.0, 0.1))
                 cost = self.base_cost_per_km * (1.0 + c) * dist
 
-                # Obstacle crossing check
-                xi, xj = nodes[i][0], nodes[j][0]
-                if (xi - self.obstacle_x) * (xj - self.obstacle_x) < 0:
-                    cost += self.obstacle_cost
+                # Obstacle crossing: add penalty if arc crosses any polyline segment
+                pi = (float(nodes[i][0]), float(nodes[i][1]))
+                pj = (float(nodes[j][0]), float(nodes[j][1]))
+                for k in range(len(obstacle) - 1):
+                    if self._segments_intersect(pi, pj, obstacle[k], obstacle[k + 1]):
+                        cost += self.obstacle_cost
+                        break
 
                 costs[(i, j)] = cost
         return costs

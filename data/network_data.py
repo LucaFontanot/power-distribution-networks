@@ -19,6 +19,9 @@ class NetworkData:
     ps_indices: List[int]
     ss_indices: List[int]
 
+    # Obstacle polyline: sequence of (x, y) waypoints defining the snake
+    obstacle_polyline: List[Tuple[float, float]]
+
     # Zone geometry (km)
     side_center: float
     side_suburbs: float
@@ -58,6 +61,8 @@ class NetworkData:
             f"({self.density_center} nodes/km²)\n"
             f"  Suburbs box  : {self.side_suburbs:.2f} x {self.side_suburbs:.2f} km  "
             f"({self.density_suburbs} nodes/km²)\n"
+            f"  Obstacle     : {len(self.obstacle_polyline) - 1} segments, "
+            f"{len(self.obstacle_polyline)} waypoints\n"
             f"  Seed         : {self.seed}"
         )
 
