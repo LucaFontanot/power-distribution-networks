@@ -45,8 +45,12 @@ def solve_lf_se(net, time_limit: float = 21600, verbose: bool = True):
         m.addConstr(f[arc] <= (x[arc] * p[arc]) / 2.0, name=f"cap_hi_{i}_{j}")
 
     n_nodes = net.n_nodes
+    root_bound = [None]
 
     def subtour_callback(model, where):
+        if where == GRB.Callback.MIPNODE and root_bound[0] is None:
+            if model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL:
+                root_bound[0] = model.cbGet(GRB.Callback.MIPNODE_OBJBND)
         if where != GRB.Callback.MIPSOL:
             return
         x_val = model.cbGetSolution(x)
@@ -65,4 +69,4 @@ def solve_lf_se(net, time_limit: float = 21600, verbose: bool = True):
                     )
 
     m.optimize(subtour_callback)
-    return _extract_solution(m, x, A)
+    return _extract_solution(m, x, A, root_bound[0])

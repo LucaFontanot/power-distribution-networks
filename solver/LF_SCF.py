@@ -53,6 +53,13 @@ def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
         m.addConstr(s[arc] >= -(x[arc] * nD) / 2.0, name=f"cap_s_lo_{i}_{j}")
         m.addConstr(s[arc] <= (x[arc] * nD) / 2.0, name=f"cap_s_hi_{i}_{j}")
 
+    root_bound = [None]
+
+    def _root_callback(model, where):
+        if where == GRB.Callback.MIPNODE and root_bound[0] is None:
+            if model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL:
+                root_bound[0] = model.cbGet(GRB.Callback.MIPNODE_OBJBND)
+
     m.write("lf_scf.lp")
-    m.optimize()
-    return _extract_solution(m, x, A)
+    m.optimize(_root_callback)
+    return _extract_solution(m, x, A, root_bound[0])

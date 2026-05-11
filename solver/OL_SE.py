@@ -71,7 +71,12 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
                     name=f"cc_r{r}",
                 )
 
+    root_bound = [None]
+
     def open_loop_callback(model, where):
+        if where == GRB.Callback.MIPNODE and root_bound[0] is None:
+            if model.cbGet(GRB.Callback.MIPNODE_STATUS) == GRB.OPTIMAL:
+                root_bound[0] = model.cbGet(GRB.Callback.MIPNODE_OBJBND)
         if where != GRB.Callback.MIPSOL:
             return
         x_val = model.cbGetSolution(x)
@@ -94,7 +99,7 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
                     )
 
     m.optimize(open_loop_callback)
-    return _extract_solution(m, x, A)
+    return _extract_solution(m, x, A, root_bound[0])
 
 
 def solve_ol_se_cc(net, time_limit: float = 21600, verbose: bool = True):

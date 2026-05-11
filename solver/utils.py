@@ -35,9 +35,15 @@ def build_adjacency(A: List[Tuple[int, int]]):
         inc[j].append(arc)
     return fwd, bwd, inc
 
-"""Return (active_arcs, objective_value) from a solved model, or (None, None)."""
-def _extract_solution(model, x, A):
+"""Return (active_arcs, obj, gap_pct, root_gap_pct) from a solved model, or (None, None, None, None)."""
+def _extract_solution(model, x, A, root_bound=None):
     if model.SolCount == 0:
-        return None, None
+        return None, None, None, None
     active_arcs = [arc for arc in A if x[arc].X > 0.5]
-    return active_arcs, model.ObjVal
+    obj = model.ObjVal
+    gap_pct = model.MIPGap * 100
+    if root_bound is not None and abs(obj) > 1e-10:
+        root_gap_pct = abs(root_bound - obj) / abs(obj) * 100
+    else:
+        root_gap_pct = None
+    return active_arcs, obj, gap_pct, root_gap_pct

@@ -33,24 +33,27 @@ CASE_STUDIES = {
 SEED = 57
 TIME_LIMIT = 60
 
+def _fmt_gap(label, val):
+    return f"{val:.2f}%" if val is not None else "N/A"
+
 def run_case(data, is_generated=False):
     plot_network(data, show_arc_costs=False, show_area=is_generated)
     plot_network(data, show_arc_costs=True, show_area=is_generated)
     time_ms = time.time()
-    arcs, obj = solve_lf_scf(data, time_limit=TIME_LIMIT, verbose=False)
-    print(f"LF-SCF: time={time.time() - time_ms:.2f} seconds")
+    arcs, obj, gap, root_gap = solve_lf_scf(data, time_limit=TIME_LIMIT, verbose=False)
+    print(f"LF-SCF:  time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="LF-SCF Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj = solve_lf_se(data, time_limit=TIME_LIMIT, verbose=False)
-    print(f"LF-SE: time={time.time() - time_ms:.2f} seconds")
+    arcs, obj, gap, root_gap = solve_lf_se(data, time_limit=TIME_LIMIT, verbose=False)
+    print(f"LF-SE:   time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="LF-SE Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj = solve_ol_se(data, time_limit=TIME_LIMIT, verbose=False)
-    print(f"OL-SCF: time={time.time() - time_ms:.2f} seconds")
+    arcs, obj, gap, root_gap = solve_ol_se(data, time_limit=TIME_LIMIT, verbose=False)
+    print(f"OL-SE:   time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj = solve_ol_se_cc(data, time_limit=TIME_LIMIT, verbose=False)
-    print(f"OL-SCF: time={time.time() - time_ms:.2f} seconds")
+    arcs, obj, gap, root_gap = solve_ol_se_cc(data, time_limit=TIME_LIMIT, verbose=False)
+    print(f"OL-SE+CC: time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
 
 def generate_data(case):
@@ -74,17 +77,20 @@ if __name__ == "__main__":
     print("Available case studies:")
     for case_name in CASE_STUDIES.keys():
         print(f"  {case_name}")
+    print("  all")
     case_choice = input("Enter the case study you want to run: ").strip()
-    if case_choice not in CASE_STUDIES:
+    if case_choice not in CASE_STUDIES and case_choice != "all":
         print(f"Invalid case study choice: {case_choice}")
         exit(1)
-    if choice == "existing":
-        data = load_network(case_choice)
-        data.dump(f"{case_choice}_dump.txt")
-    elif choice == "generate":
-        case_params = CASE_STUDIES[case_choice]
-        data = generate_data(case_params)
-    else:
-        print(f"Invalid choice: {choice}")
-        exit(1)
-    run_case(data, is_generated=(choice == "generate"))
+    selected_cases = CASE_STUDIES.keys() if case_choice == "all" else [case_choice]
+    for case_choice in selected_cases:
+        if choice == "existing":
+            data = load_network(case_choice)
+            data.dump(f"{case_choice}_dump.txt")
+        elif choice == "generate":
+            case_params = CASE_STUDIES[case_choice]
+            data = generate_data(case_params)
+        else:
+            print(f"Invalid choice: {choice}")
+            exit(1)
+        run_case(data, is_generated=(choice == "generate"))
