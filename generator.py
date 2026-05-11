@@ -94,12 +94,14 @@ class Generator:
         # Intentionally violate triangle inequality for some arcs
         sp_costs = self._violate_triangle(sp_costs, rng)
 
+        capacities = {arc: self.cable_capacity for arc in sp_costs}
+
         return NetworkData(
             nodes=nodes,
             types=types,
             demands=demands,
             costs=sp_costs,
-            cable_capacity=self.cable_capacity,
+            capacities=capacities,
             ps_indices=list(range(n_ps)),
             ss_indices=list(range(n_ps, n_ps + n_ss_center + n_ss_suburbs)),
             obstacle_polyline=obstacle,

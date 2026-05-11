@@ -13,8 +13,8 @@ class NetworkData:
     demands: np.ndarray  # shape (N,) — MW demand per node (0 for PSs)
 
     # Arc information
-    costs: Dict[Tuple[int, int], float]  # arc (i,j) with i<j → cost in EUR
-    cable_capacity: float                # standardised rated capacity per cable (MW)
+    costs: Dict[Tuple[int, int], float]       # arc (i,j) with i<j → cost in EUR
+    capacities: Dict[Tuple[int, int], float]  # arc (i,j) with i<j → capacity in MW
 
     # Index helpers
     ps_indices: List[int]

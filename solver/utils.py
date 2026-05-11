@@ -8,7 +8,7 @@ def _unpack(net):
     A = list(net.costs.keys())
     c = net.costs
     d = {i: float(net.demands[i]) for i in D}
-    p = {arc: float(net.cable_capacity) for arc in A}
+    p = {arc: float(net.capacities[arc]) for arc in A}
     return R, D, A, c, d, p
 
 """Precompute forward/backward/star adjacency."""

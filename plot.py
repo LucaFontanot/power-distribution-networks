@@ -8,6 +8,7 @@ def plot_network(
         net: NetworkData,
         title: str = "Network",
         show_arc_costs: bool = False,
+        show_area: bool = True,
         figsize: Tuple[int, int] = (8, 8),
 ) -> None:
     fig, ax = plt.subplots(figsize=figsize)
@@ -51,17 +52,18 @@ def plot_network(
         ax.text(poly_x[-1] + 0.05, poly_y[-1], 'obstacle',
                 fontsize=8, color='black')
 
-    # Draw zone boxes
-    hc = net.side_center / 2
-    hs = net.side_suburbs / 2
-    rect_c = mpatches.Rectangle((-hc, -hc), net.side_center, net.side_center,
-                                linewidth=1.2, edgecolor='#378ADD',
-                                facecolor='none', linestyle='--', zorder=0)
-    rect_s = mpatches.Rectangle((-hs, -hs), net.side_suburbs, net.side_suburbs,
-                                linewidth=1.2, edgecolor='#85B8E8',
-                                facecolor='none', linestyle=':', zorder=0)
-    ax.add_patch(rect_c)
-    ax.add_patch(rect_s)
+    if show_area:
+        # Draw zone boxes
+        hc = net.side_center / 2
+        hs = net.side_suburbs / 2
+        rect_c = mpatches.Rectangle((-hc, -hc), net.side_center, net.side_center,
+                                    linewidth=1.2, edgecolor='#378ADD',
+                                    facecolor='none', linestyle='--', zorder=0)
+        rect_s = mpatches.Rectangle((-hs, -hs), net.side_suburbs, net.side_suburbs,
+                                    linewidth=1.2, edgecolor='#85B8E8',
+                                    facecolor='none', linestyle=':', zorder=0)
+        ax.add_patch(rect_c)
+        ax.add_patch(rect_s)
 
     # Legend
     legend_elements = [
@@ -85,6 +87,7 @@ def plot_solution(
         obj: Optional[float],
         net: NetworkData,
         title: str = "Solution",
+        show_area: bool = False,
         figsize: Tuple[int, int] = (8, 8),
 ) -> None:
     fig, ax = plt.subplots(figsize=figsize)
@@ -128,17 +131,18 @@ def plot_solution(
         ax.text(poly_x[-1] + 0.05, poly_y[-1], 'obstacle',
                 fontsize=8, color='black')
 
-    # Draw zone boxes
-    hc = net.side_center / 2
-    hs = net.side_suburbs / 2
-    rect_c = mpatches.Rectangle((-hc, -hc), net.side_center, net.side_center,
-                                 linewidth=1.2, edgecolor='#378ADD',
-                                 facecolor='none', linestyle='--', zorder=0)
-    rect_s = mpatches.Rectangle((-hs, -hs), net.side_suburbs, net.side_suburbs,
-                                 linewidth=1.2, edgecolor='#85B8E8',
-                                 facecolor='none', linestyle=':', zorder=0)
-    ax.add_patch(rect_c)
-    ax.add_patch(rect_s)
+    if show_area:
+        # Draw zone boxes
+        hc = net.side_center / 2
+        hs = net.side_suburbs / 2
+        rect_c = mpatches.Rectangle((-hc, -hc), net.side_center, net.side_center,
+                                     linewidth=1.2, edgecolor='#378ADD',
+                                     facecolor='none', linestyle='--', zorder=0)
+        rect_s = mpatches.Rectangle((-hs, -hs), net.side_suburbs, net.side_suburbs,
+                                     linewidth=1.2, edgecolor='#85B8E8',
+                                     facecolor='none', linestyle=':', zorder=0)
+        ax.add_patch(rect_c)
+        ax.add_patch(rect_s)
 
     # Legend
     legend_elements = [

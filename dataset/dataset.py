@@ -16,7 +16,7 @@ _CASE_METADATA = {
 }
 
 
-def load_network(name: str, cable_capacity: float = 10.0) -> NetworkData:
+def load_network(name: str) -> NetworkData:
     base_name = name
 
     folder = DATASET_DIR / base_name
@@ -53,14 +53,14 @@ def load_network(name: str, cable_capacity: float = 10.0) -> NetworkData:
     side_suburbs = np.sqrt(n_ss_suburbs / density_suburbs) if density_suburbs else 0.0
 
     # --------------------------------------------------------------- branches
-    costs = _load_branches(branches_csv)
+    costs, capacities = _load_branches(branches_csv)
 
     return NetworkData(
         nodes=coordinates,
         types=types,
         demands=demands,
         costs=costs,
-        cable_capacity=cable_capacity,
+        capacities=capacities,
         ps_indices=ps_indices,
         ss_indices=ss_indices,
         obstacle_polyline=[],
@@ -93,22 +93,23 @@ def _load_nodes(path: Path):
 
 def _load_branches(path: Path):
     costs = {}
+    capacities = {}
 
     with open(path, newline="", encoding="cp1252") as f:
         reader = csv.reader(f)
-        header = next(reader)
-        # The cost column is the 4th column (index 3) regardless of encoding
-        cost_col = 3
+        next(reader)  # skip header
         for row in reader:
             if not row:
                 continue
-            i    = int(row[0]) - 1   # convert to 0-based index
-            j    = int(row[1]) - 1
-            cost = float(row[cost_col])
-            key  = (min(i, j), max(i, j))
-            costs[key] = cost
+            i        = int(row[0]) - 1   # convert to 0-based index
+            j        = int(row[1]) - 1
+            capacity = float(row[2])
+            cost     = float(row[3])
+            key      = (min(i, j), max(i, j))
+            costs[key]      = cost
+            capacities[key] = capacity
 
-    return costs
+    return costs, capacities
 
 
 def _classify_types(coordinates, raw_types, ps_indices, ss_indices, meta):
