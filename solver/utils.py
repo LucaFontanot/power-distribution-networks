@@ -5,6 +5,17 @@ from collections import defaultdict
 def _unpack(net):
     R = list(net.ps_indices)
     D = list(net.ss_indices)
+
+    # Guard: R and D must be disjoint — PS (root) nodes must never appear in D.
+    # If ss_indices accidentally contains PS indices every root gets a degree=2
+    # constraint and nD inflates, corrupting the cap_s bound (Bug 2).
+    overlap = set(R) & set(D)
+    if overlap:
+        raise ValueError(
+            f"ss_indices contains PS node indices {sorted(overlap)}. "
+            f"R and D must be disjoint (|R|={len(R)}, |D|={len(D)})."
+        )
+
     A = list(net.costs.keys())
     c = net.costs
     d = {i: float(net.demands[i]) for i in D}

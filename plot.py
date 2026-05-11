@@ -39,9 +39,17 @@ def plot_network(
         elif t == 'SS_center':
             ax.plot(*xy, 'o', color='#378ADD', markersize=7,
                     zorder=3, markeredgecolor='#185FA5', markeredgewidth=0.8)
+            ax.text(xy[0], xy[1] + 0.14, f'SS{idx}',
+                    ha='center', fontsize=6, color='#185FA5', fontweight='bold')
+            ax.text(xy[0], xy[1] - 0.18, f'{net.demands[idx]:.1f} MW',
+                    ha='center', fontsize=5.5, color='#185FA5')
         else:
             ax.plot(*xy, 'o', color='#85B8E8', markersize=5,
                     zorder=3, markeredgecolor='#378ADD', markeredgewidth=0.6)
+            ax.text(xy[0], xy[1] + 0.14, f'SS{idx}',
+                    ha='center', fontsize=6, color='#378ADD', fontweight='bold')
+            ax.text(xy[0], xy[1] - 0.18, f'{net.demands[idx]:.1f} MW',
+                    ha='center', fontsize=5.5, color='#378ADD')
 
     # Draw obstacle polyline (snake)
     if net.obstacle_polyline:
@@ -118,9 +126,17 @@ def plot_solution(
         elif t == 'SS_center':
             ax.plot(*xy, 'o', color='#378ADD', markersize=7,
                     zorder=4, markeredgecolor='#185FA5', markeredgewidth=0.8)
+            ax.text(xy[0], xy[1] + 0.14, f'SS{idx}',
+                    ha='center', fontsize=6, color='#185FA5', fontweight='bold')
+            ax.text(xy[0], xy[1] - 0.18, f'{net.demands[idx]:.1f} MW',
+                    ha='center', fontsize=5.5, color='#185FA5')
         else:
             ax.plot(*xy, 'o', color='#85B8E8', markersize=5,
                     zorder=4, markeredgecolor='#378ADD', markeredgewidth=0.6)
+            ax.text(xy[0], xy[1] + 0.14, f'SS{idx}',
+                    ha='center', fontsize=6, color='#378ADD', fontweight='bold')
+            ax.text(xy[0], xy[1] - 0.18, f'{net.demands[idx]:.1f} MW',
+                    ha='center', fontsize=5.5, color='#378ADD')
 
     # Draw obstacle polyline
     if net.obstacle_polyline:

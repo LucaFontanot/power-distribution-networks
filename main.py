@@ -33,25 +33,25 @@ CASE_STUDIES = {
 SEED = 57
 TIME_LIMIT = 60
 
-def run_case(data):
-    plot_network(data, show_arc_costs=False)
-    plot_network(data, show_arc_costs=True)
+def run_case(data, is_generated=False):
+    plot_network(data, show_arc_costs=False, show_area=is_generated)
+    plot_network(data, show_arc_costs=True, show_area=is_generated)
     time_ms = time.time()
     arcs, obj = solve_lf_scf(data, time_limit=TIME_LIMIT, verbose=False)
     print(f"LF-SCF: time={time.time() - time_ms:.2f} seconds")
-    plot_solution(arcs, obj, data, title="LF-SCF Solution")
+    plot_solution(arcs, obj, data, title="LF-SCF Solution", show_area=is_generated)
     time_ms = time.time()
     arcs, obj = solve_lf_se(data, time_limit=TIME_LIMIT, verbose=False)
     print(f"LF-SE: time={time.time() - time_ms:.2f} seconds")
-    plot_solution(arcs, obj, data, title="LF-SE Solution")
+    plot_solution(arcs, obj, data, title="LF-SE Solution", show_area=is_generated)
     time_ms = time.time()
     arcs, obj = solve_ol_se(data, time_limit=TIME_LIMIT, verbose=False)
     print(f"OL-SCF: time={time.time() - time_ms:.2f} seconds")
-    plot_solution(arcs, obj, data, title="OL-SCF Solution")
+    plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
     time_ms = time.time()
     arcs, obj = solve_ol_se_cc(data, time_limit=TIME_LIMIT, verbose=False)
     print(f"OL-SCF: time={time.time() - time_ms:.2f} seconds")
-    plot_solution(arcs, obj, data, title="OL-SCF Solution")
+    plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
 
 def generate_data(case):
     gen = Generator()
@@ -80,11 +80,11 @@ if __name__ == "__main__":
         exit(1)
     if choice == "existing":
         data = load_network(case_choice)
-        run_case(data)
+        data.dump(f"{case_choice}_dump.txt")
     elif choice == "generate":
         case_params = CASE_STUDIES[case_choice]
         data = generate_data(case_params)
-        run_case(data)
     else:
         print(f"Invalid choice: {choice}")
         exit(1)
+    run_case(data, is_generated=(choice == "generate"))
