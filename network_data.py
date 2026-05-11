@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
 import numpy as np
@@ -48,6 +49,61 @@ class NetworkData:
     @property
     def n_arcs(self) -> int:
         return len(self.costs)
+
+    def dump(self, path: "str | Path" = "network_dump.txt") -> Path:
+        out = Path(path)
+        lines: List[str] = []
+
+        lines.append("=" * 70)
+        lines.append("NETWORK DATA DUMP")
+        lines.append("=" * 70)
+        lines.append(self.summary())
+        lines.append("")
+
+        lines.append("-" * 70)
+        lines.append(f"NODES  ({self.n_nodes} total)")
+        lines.append("-" * 70)
+        lines.append(f"  {'Idx':>4}  {'Type':<12}  {'x (km)':>10}  {'y (km)':>10}  {'demand (MW)':>12}")
+        for i, (xy, t, dem) in enumerate(zip(self.nodes, self.types, self.demands)):
+            lines.append(f"  {i:>4}  {t:<12}  {xy[0]:>10.4f}  {xy[1]:>10.4f}  {dem:>12.4f}")
+        lines.append("")
+
+        lines.append("-" * 70)
+        lines.append("INDEX SETS")
+        lines.append("-" * 70)
+        lines.append(f"  PS (roots) [{len(self.ps_indices)}]: {self.ps_indices}")
+        lines.append(f"  SS (demand) [{len(self.ss_indices)}]: {self.ss_indices}")
+        lines.append("")
+
+        lines.append("-" * 70)
+        lines.append(f"ARCS  ({self.n_arcs} total)")
+        lines.append("-" * 70)
+        lines.append(f"  {'(i,j)':<12}  {'cost (EUR)':>14}  {'capacity (MW)':>14}")
+        for arc, cost in sorted(self.costs.items()):
+            cap = self.capacities[arc]
+            lines.append(f"  {str(arc):<12}  {cost:>14.2f}  {cap:>14.4f}")
+        lines.append("")
+
+        if self.obstacle_polyline:
+            lines.append("-" * 70)
+            lines.append(f"OBSTACLE POLYLINE  ({len(self.obstacle_polyline)} waypoints)")
+            lines.append("-" * 70)
+            for k, (x, y) in enumerate(self.obstacle_polyline):
+                lines.append(f"  [{k:>3}]  x={x:>10.4f}  y={y:>10.4f}")
+            lines.append("")
+
+        lines.append("-" * 70)
+        lines.append("ZONE GEOMETRY")
+        lines.append("-" * 70)
+        lines.append(f"  Centre box   : {self.side_center:.4f} x {self.side_center:.4f} km")
+        lines.append(f"  Suburbs box  : {self.side_suburbs:.4f} x {self.side_suburbs:.4f} km")
+        lines.append(f"  Density centre   : {self.density_center} nodes/km²")
+        lines.append(f"  Density suburbs  : {self.density_suburbs} nodes/km²")
+        lines.append(f"  Seed         : {self.seed}")
+        lines.append("=" * 70)
+
+        out.write_text("\n".join(lines), encoding="utf-8")
+        return out
 
     def summary(self) -> str:
         return (

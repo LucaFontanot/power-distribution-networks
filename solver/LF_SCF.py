@@ -6,8 +6,6 @@ from .utils import _unpack, _extract_solution, build_adjacency
 """
 Loop-Feeder Single Commodity Flow (LF-SCF).
 """
-
-
 def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
     R, D, A, c, d, p = _unpack(net)
     nD = len(D)
@@ -55,5 +53,6 @@ def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
         m.addConstr(s[arc] >= -(x[arc] * nD) / 2.0, name=f"cap_s_lo_{i}_{j}")
         m.addConstr(s[arc] <= (x[arc] * nD) / 2.0, name=f"cap_s_hi_{i}_{j}")
 
+    m.write("lf_scf.lp")
     m.optimize()
     return _extract_solution(m, x, A)
