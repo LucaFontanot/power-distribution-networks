@@ -30,7 +30,6 @@ def load_network(name: str) -> NetworkData:
         if not path.exists():
             raise FileNotFoundError(f"Expected CSV not found: {path}")
 
-    # ------------------------------------------------------------------ nodes
     coordinates, demands, raw_types = _load_nodes(nodes_csv)
 
     ps_indices = [i for i, t in enumerate(raw_types) if t == "PS"]
@@ -52,7 +51,6 @@ def load_network(name: str) -> NetworkData:
     side_center  = np.sqrt(n_ss_center  / density_center)  if density_center  else 0.0
     side_suburbs = np.sqrt(n_ss_suburbs / density_suburbs) if density_suburbs else 0.0
 
-    # --------------------------------------------------------------- branches
     costs, capacities = _load_branches(branches_csv)
 
     return NetworkData(
