@@ -13,8 +13,8 @@ def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
     fwd, bwd, inc = build_adjacency(A)
 
     m = gp.Model("LF-SCF")
-    m.Params.TimeLimit = time_limit
     m.Params.OutputFlag = int(verbose)
+    m.Params.TimeLimit = time_limit
 
     x = m.addVars(A, vtype=GRB.BINARY, name="x")
     f = m.addVars(A, vtype=GRB.CONTINUOUS, name="f", lb=-GRB.INFINITY)

@@ -21,8 +21,8 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
     fwd, bwd, inc = build_adjacency(A)
 
     m = gp.Model("OL-SE+CC" if cut_constraints else "OL-SE")
-    m.Params.TimeLimit = time_limit
     m.Params.OutputFlag = int(verbose)
+    m.Params.TimeLimit = time_limit
     m.Params.LazyConstraints = 1
 
     x = m.addVars(A, vtype=GRB.BINARY, name="x")

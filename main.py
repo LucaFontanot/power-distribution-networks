@@ -8,7 +8,7 @@ from solver.LF_SCF import solve_lf_scf
 from solver.OL_SE import solve_ol_se, solve_ol_se_cc
 
 
-CASE_STUDIES = {
+_CASE_STUDIES = {
     "Case54": dict(
         n_ps_center=2, n_ps_suburbs=2,
         n_ss_center=25, n_ss_suburbs=25,
@@ -30,13 +30,13 @@ CASE_STUDIES = {
         density_center=6.83, density_suburbs=1.50,
     ),
 }
-SEED = 57
-TIME_LIMIT = 60
+_SEED = 57
+_TIME_LIMIT = 60 * 60
 
 def _fmt_gap(label, val):
     return f"{val:.2f}%" if val is not None else "N/A"
 
-def run_case(data, is_generated=False):
+def _run_case(data, is_generated=False):
     print()
     print("=" * 50)
     print(f"  Case study : {case_choice}")
@@ -50,23 +50,23 @@ def run_case(data, is_generated=False):
     plot_network(data, show_arc_costs=False, show_area=is_generated)
     plot_network(data, show_arc_costs=True, show_area=is_generated)
     time_ms = time.time()
-    arcs, obj, gap, root_gap = solve_lf_scf(data, time_limit=TIME_LIMIT, verbose=True)
+    arcs, obj, gap, root_gap = solve_lf_scf(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"LF-SCF:  time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="LF-SCF Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj, gap, root_gap = solve_lf_se(data, time_limit=TIME_LIMIT, verbose=True)
+    arcs, obj, gap, root_gap = solve_lf_se(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"LF-SE:   time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="LF-SE Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj, gap, root_gap = solve_ol_se(data, time_limit=TIME_LIMIT, verbose=True)
+    arcs, obj, gap, root_gap = solve_ol_se(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"OL-SE:   time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
     time_ms = time.time()
-    arcs, obj, gap, root_gap = solve_ol_se_cc(data, time_limit=TIME_LIMIT, verbose=True)
+    arcs, obj, gap, root_gap = solve_ol_se_cc(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"OL-SE+CC: time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
     plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
 
-def generate_data(case):
+def _generate_data(case):
     gen = Generator()
     return gen.generate(
         case["n_ps_center"],
@@ -75,7 +75,7 @@ def generate_data(case):
         case["n_ss_suburbs"],
         case["density_center"],
         case["density_suburbs"],
-        SEED
+        _SEED
     )
 
 if __name__ == "__main__":
@@ -85,22 +85,22 @@ if __name__ == "__main__":
     print("  generate | Generates a new dataset based on specified parameters.")
     choice = input("Enter your choice (existing/generate): ").strip().lower()
     print("Available case studies:")
-    for case_name in CASE_STUDIES.keys():
+    for case_name in _CASE_STUDIES.keys():
         print(f"  {case_name}")
     print("  all")
     case_choice = input("Enter the case study you want to run: ").strip()
-    if case_choice not in CASE_STUDIES and case_choice != "all":
+    if case_choice not in _CASE_STUDIES and case_choice != "all":
         print(f"Invalid case study choice: {case_choice}")
         exit(1)
-    selected_cases = CASE_STUDIES.keys() if case_choice == "all" else [case_choice]
+    selected_cases = _CASE_STUDIES.keys() if case_choice == "all" else [case_choice]
     for case_choice in selected_cases:
         if choice == "existing":
             data = load_network(case_choice)
             data.dump(f"{case_choice}_dump.txt")
         elif choice == "generate":
-            case_params = CASE_STUDIES[case_choice]
-            data = generate_data(case_params)
+            case_params = _CASE_STUDIES[case_choice]
+            data = _generate_data(case_params)
         else:
             print(f"Invalid choice: {choice}")
             exit(1)
-        run_case(data, is_generated=(choice == "generate"))
+        _run_case(data, is_generated=(choice == "generate"))
