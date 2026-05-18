@@ -37,6 +37,16 @@ def _fmt_gap(label, val):
     return f"{val:.2f}%" if val is not None else "N/A"
 
 def run_case(data, is_generated=False):
+    print()
+    print("=" * 50)
+    print(f"  Case study : {case_choice}")
+    print("=" * 50)
+    print(f"  Nodes      : {data.n_nodes}  (PS: {data.n_ps}, SS: {len(data.ss_indices)})")
+    print(f"  Arcs       : {data.n_arcs}")
+    print(f"  PS roots   : {data.ps_indices}")
+    print(f"  Total demand : {data.demands.sum():.4f} MW")
+    print("=" * 50)
+    print()
     plot_network(data, show_arc_costs=False, show_area=is_generated)
     plot_network(data, show_arc_costs=True, show_area=is_generated)
     time_ms = time.time()

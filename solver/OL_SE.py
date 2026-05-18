@@ -103,6 +103,5 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
 
 
 def solve_ol_se_cc(net, time_limit: float = 21600, verbose: bool = True):
-    """OL-SE + Cut Constraints — convenience wrapper around `solve_ol_se`."""
     return solve_ol_se(net, time_limit=time_limit, verbose=verbose,
                        cut_constraints=True)

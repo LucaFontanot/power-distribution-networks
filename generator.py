@@ -176,6 +176,8 @@ class Generator:
             half_inner: float,
             rng: np.random.Generator,
     ) -> np.ndarray:
+        if n == 0:
+            return np.empty((0, 2))
         points = []
         while len(points) < n:
             batch = rng.uniform(-half_outer, half_outer, (max(n * 4, 64), 2))
