@@ -1,3 +1,6 @@
+import datetime
+import os
+
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 from network_data import NetworkData
@@ -177,4 +180,40 @@ def plot_solution(
     ax.set_ylabel('y (km)')
     ax.set_aspect('equal')
     plt.tight_layout()
+    plt.show()
+
+def plot_scalability_results(results, max_time, algorithms):
+    if not any(results.values()):
+        print("Nothing to plot.")
+        return
+
+    plt.figure(figsize=(10, 6))
+    cmap = plt.get_cmap("tab10")
+    colors = [cmap(i) for i in range(10)]
+
+    for idx, (name, _) in enumerate(algorithms):
+        runs = results[name]
+        if not runs:
+            continue
+        color = colors[idx % len(colors)]
+        xs = [r["n_nodes"] for r in runs]
+        ys = [r["t"] for r in runs]
+        plt.plot(xs, ys, marker="o", linewidth=2, color=color, label=name)
+
+
+    plt.axhline(max_time, color="red", linestyle=":", alpha=0.6,
+                label=f"time cap = {max_time:.1f}s")
+    plt.xlabel("Network size (number of nodes)")
+    plt.ylabel("Execution time [s]")
+    plt.title("Scalability of the power-distribution-network solvers")
+    plt.grid(True, alpha=0.3)
+    plt.legend(loc="best", fontsize=9)
+    plt.tight_layout()
+
+    out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
+    os.makedirs(out_dir, exist_ok=True)
+    stamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+    out_path = os.path.join(out_dir, f"scalability_{stamp}.png")
+    plt.savefig(out_path, dpi=150)
+    print(f"Chart saved to: {out_path}")
     plt.show()
