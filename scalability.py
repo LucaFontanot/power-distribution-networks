@@ -118,6 +118,8 @@ def test_scalability(time: float):
             if not active[name]:
                 row_times[name] = None
                 continue
+            print(f"  >> step {step:>3} | {name:<10} | N={n_nodes:>4} | running...    ",
+                  end="\r", flush=True)
             t0 = _time.time()
             try:
                 solver(net, time_limit=max_time, verbose=False)
@@ -137,6 +139,8 @@ def test_scalability(time: float):
                     except Exception as exc:
                         print(f"[step {step}] retry generation failed ({exc}).")
                         break
+                    print(f"  >> step {step:>3} | {name:<10} | N={n_nodes:>4} | retry {k}/2...  ",
+                          end="\r", flush=True)
                     t0k = _time.time()
                     try:
                         solver(net_k, time_limit=max_time, verbose=False)
