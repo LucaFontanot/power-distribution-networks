@@ -2,14 +2,14 @@ import gurobipy as gp
 import networkx as nx
 from gurobipy import GRB
 
-from .utils import _unpack, _extract_solution, build_adjacency
+from .utils import unpack, extract_solution, build_adjacency
 
 """
 Loop-Feeder Subtour Elimination (LF-SE).
 """
 def solve_lf_se(net, time_limit: float = 21600, verbose: bool = True):
 
-    R, D, A, c, d, p = _unpack(net)
+    R, D, A, c, d, p = unpack(net)
     R_set = set(R)
 
     fwd, bwd, inc = build_adjacency(A)
@@ -69,4 +69,4 @@ def solve_lf_se(net, time_limit: float = 21600, verbose: bool = True):
                     )
 
     m.optimize(subtour_callback)
-    return _extract_solution(m, x, A, root_bound[0])
+    return extract_solution(m, x, A, root_bound[0])

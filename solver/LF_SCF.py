@@ -1,13 +1,13 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-from .utils import _unpack, _extract_solution, build_adjacency
+from .utils import unpack, extract_solution, build_adjacency
 
 """
 Loop-Feeder Single Commodity Flow (LF-SCF).
 """
 def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
-    R, D, A, c, d, p = _unpack(net)
+    R, D, A, c, d, p = unpack(net)
     nD = len(D)
 
     fwd, bwd, inc = build_adjacency(A)
@@ -62,4 +62,4 @@ def solve_lf_scf(net, time_limit: float = 21600, verbose: bool = True):
 
     m.write("lf_scf.lp")
     m.optimize(_root_callback)
-    return _extract_solution(m, x, A, root_bound[0])
+    return extract_solution(m, x, A, root_bound[0])

@@ -2,7 +2,7 @@ from typing import List, Tuple, Dict
 from collections import defaultdict
 
 """Extract sets and parameters from a NetworkData object."""
-def _unpack(net):
+def unpack(net):
     R = list(net.ps_indices)
     D = list(net.ss_indices)
 
@@ -36,7 +36,7 @@ def build_adjacency(A: List[Tuple[int, int]]):
     return fwd, bwd, inc
 
 """Return (active_arcs, obj, gap_pct, root_gap_pct) from a solved model, or (None, None, None, None)."""
-def _extract_solution(model, x, A, root_bound=None):
+def extract_solution(model, x, A, root_bound=None):
     if model.SolCount == 0:
         return None, None, None, None
     active_arcs = [arc for arc in A if x[arc].X > 0.5]

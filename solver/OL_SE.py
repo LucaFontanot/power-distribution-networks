@@ -2,7 +2,7 @@ import gurobipy as gp
 import networkx as nx
 from gurobipy import GRB
 
-from .utils import _unpack, _extract_solution, build_adjacency
+from .utils import unpack, extract_solution, build_adjacency
 
 """
 Open-Loop Subtour Elimination (OL-SE).
@@ -12,7 +12,7 @@ constraints upfront
 """
 def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
                 cut_constraints: bool = False):
-    R, D, A, c, d, p = _unpack(net)
+    R, D, A, c, d, p = unpack(net)
     R_set = set(R)
     D_set = set(D)
     n_nodes = net.n_nodes
@@ -99,7 +99,7 @@ def solve_ol_se(net, time_limit: float = 21600, verbose: bool = True,
                     )
 
     m.optimize(open_loop_callback)
-    return _extract_solution(m, x, A, root_bound[0])
+    return extract_solution(m, x, A, root_bound[0])
 
 
 def solve_ol_se_cc(net, time_limit: float = 21600, verbose: bool = True):
