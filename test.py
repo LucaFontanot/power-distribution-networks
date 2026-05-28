@@ -60,11 +60,11 @@ def _run_case(data, is_generated=False):
     time_ms = time.time()
     arcs, obj, gap, root_gap = solve_ol_se(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"OL-SE:   time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
-    plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
+    plot_solution(arcs, obj, data, title="OL-SE Solution", show_area=is_generated)
     time_ms = time.time()
     arcs, obj, gap, root_gap = solve_ol_se_cc(data, time_limit=_TIME_LIMIT, verbose=True)
     print(f"OL-SE+CC: time={time.time() - time_ms:.2f}s | gap={_fmt_gap('', gap)} | root gap={_fmt_gap('', root_gap)}")
-    plot_solution(arcs, obj, data, title="OL-SCF Solution", show_area=is_generated)
+    plot_solution(arcs, obj, data, title="OL-SE Solution", show_area=is_generated)
 
 def _generate_data(case):
     gen = Generator()
