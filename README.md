@@ -11,6 +11,9 @@ This project is based on the research work:
 > *Computers & Operations Research*, Volume 185, 2026, 107248, ISSN 0305-0548
 > [https://doi.org/10.1016/j.cor.2025.107248](https://doi.org/10.1016/j.cor.2025.107248)
 
+- [Project Presentation](Poject-Presentation.pdf)
+- [Reference Paper](1-s2.0-S0305054825002771-main.pdf)
+
 ---
 
 ## Problem Description
